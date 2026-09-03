@@ -1,0 +1,1 @@
+# El MVP usa únicamente la biblioteca estándar de Python 3.12+.

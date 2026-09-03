@@ -1,0 +1,22 @@
+# Python
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.venv/
+venv/
+
+# Credenciales y sesiones locales
+.env
+.env.*
+!.env.example
+.local/
+*token*.json
+credentials.json
+
+# Sistema y editores
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
