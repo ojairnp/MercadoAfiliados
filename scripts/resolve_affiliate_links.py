@@ -13,7 +13,7 @@ from html.parser import HTMLParser
 from pathlib import Path
 from typing import Any
 from urllib.error import HTTPError, URLError
-from urllib.parse import unquote, urljoin, urlparse
+from urllib.parse import unquote, urljoin, urlparse, urlunsplit
 from urllib.request import HTTPRedirectHandler, Request, build_opener
 
 if __package__ in {None, ""}:
@@ -86,6 +86,139 @@ class _ProductLinkParser(HTMLParser):
         self._anchor_href = None
         self._anchor_label = ""
         self._anchor_text = []
+
+
+class _ProductCardParser(HTMLParser):
+    """Extrae únicamente tarjetas de producto renderizadas por Mercado Libre."""
+
+    def __init__(self) -> None:
+        super().__init__(convert_charrefs=True)
+        self.cards: list[dict[str, Any]] = []
+        self._card: dict[str, Any] | None = None
+        self._card_div_depth = 0
+        self._price_div_depth: int | None = None
+        self._capture_title = False
+        self._capture_fraction = False
+        self._capture_cents = False
+
+    @staticmethod
+    def _classes(attributes: dict[str, str | None]) -> set[str]:
+        return set((attributes.get("class") or "").split())
+
+    def handle_starttag(self, tag: str, attrs: list[tuple[str, str | None]]) -> None:
+        attributes = {name.lower(): value for name, value in attrs}
+        classes = self._classes(attributes)
+        tag = tag.lower()
+
+        if tag == "div":
+            if self._card is None and "poly-card" in classes:
+                self._card = {"title_parts": [], "fraction_parts": [], "cents_parts": []}
+                self._card_div_depth = 1
+            elif self._card is not None:
+                self._card_div_depth += 1
+            if self._card is not None and "poly-price__current" in classes:
+                self._price_div_depth = self._card_div_depth
+
+        if self._card is None:
+            return
+        if tag == "img" and "poly-component__picture" in classes:
+            self._card["image"] = attributes.get("src")
+        elif tag == "a" and "poly-component__title" in classes:
+            self._card["href"] = attributes.get("href")
+            self._capture_title = True
+        elif self._price_div_depth is not None:
+            if attributes.get("data-andes-money-amount-fraction") == "true":
+                self._capture_fraction = True
+            elif attributes.get("data-andes-money-amount-cents") == "true":
+                self._capture_cents = True
+
+    def handle_data(self, data: str) -> None:
+        if self._card is None:
+            return
+        if self._capture_title:
+            self._card["title_parts"].append(data)
+        if self._capture_fraction:
+            self._card["fraction_parts"].append(data)
+        if self._capture_cents:
+            self._card["cents_parts"].append(data)
+
+    def handle_endtag(self, tag: str) -> None:
+        tag = tag.lower()
+        if self._card is None:
+            return
+        if tag == "a":
+            self._capture_title = False
+        elif tag == "span":
+            self._capture_fraction = False
+            self._capture_cents = False
+        elif tag == "div":
+            if self._price_div_depth == self._card_div_depth:
+                self._price_div_depth = None
+            self._card_div_depth -= 1
+            if self._card_div_depth == 0:
+                self.cards.append(self._card)
+                self._card = None
+
+
+def _validated_image_url(value: Any) -> str | None:
+    if not isinstance(value, str):
+        return None
+    parsed = urlparse(value)
+    host = (parsed.hostname or "").lower().rstrip(".")
+    if parsed.scheme != "https" or not (host == "mlstatic.com" or host.endswith(".mlstatic.com")):
+        return None
+    return value
+
+
+def extract_product_snapshot_from_html(
+    html: str,
+    *,
+    base_url: str,
+    item_id: str,
+) -> dict[str, Any] | None:
+    """Obtiene la ficha pública de la tarjeta afiliada que coincide con el ID resuelto."""
+
+    parser = _ProductCardParser()
+    try:
+        parser.feed(html)
+        parser.close()
+    except (ValueError, RecursionError):
+        return None
+    for card in parser.cards:
+        href = card.get("href")
+        if not isinstance(href, str):
+            continue
+        try:
+            absolute = validate_official_url(urljoin(base_url, href))
+        except LinkResolutionError:
+            continue
+        if extract_mlm_id(absolute) != item_id:
+            continue
+        title = " ".join("".join(card.get("title_parts", [])).split())[:200]
+        fraction = "".join(character for character in "".join(card.get("fraction_parts", [])) if character.isdigit())
+        cents = "".join(character for character in "".join(card.get("cents_parts", [])) if character.isdigit())
+        image = _validated_image_url(card.get("image"))
+        if not title or not fraction or image is None:
+            return None
+        cents_value = int((cents or "0")[:2].ljust(2, "0"))
+        amount: int | float = int(fraction)
+        if cents_value:
+            amount += cents_value / 100
+        parsed = urlparse(absolute)
+        permalink = urlunsplit((parsed.scheme, parsed.netloc, parsed.path, "", ""))
+        return {
+            "title": title,
+            "price": amount,
+            "currency": "MXN",
+            "image": image,
+            "permalink": permalink,
+            "available": True,
+            "status": "active",
+            "condition": None,
+            "seller_id": None,
+            "official_store_id": None,
+        }
+    return None
 
 
 def _normalized_host(url: str) -> str:
@@ -194,19 +327,19 @@ def _fetch_once(url: str, timeout: float) -> FetchResult:
         return status, response.headers, response_url, body
 
 
-def resolve_affiliate_url(
+def resolve_affiliate_product(
     affiliate_url: str,
     *,
     timeout: float = 10.0,
     max_redirects: int = 10,
     fetcher: Fetcher = _fetch_once,
-) -> str:
-    """Sigue manualmente redirecciones oficiales y devuelve el ID MLM normalizado."""
+) -> tuple[str, dict[str, Any] | None]:
+    """Devuelve el ID y, cuando existe, la ficha pública de la tarjeta afiliada."""
 
     current = validate_official_url(affiliate_url)
     direct_id = extract_mlm_id(current)
     if direct_id:
-        return direct_id
+        return direct_id, None
     if _normalized_host(current) not in SHORT_LINK_HOSTS:
         raise LinkResolutionError(
             "Un producto sin id debe usar un enlace corto https://meli.la/ o https://mercado.li/"
@@ -226,7 +359,7 @@ def resolve_affiliate_url(
         response_url = validate_official_url(response_url)
         item_id = extract_mlm_id(response_url)
         if item_id:
-            return item_id
+            return item_id, None
 
         if status in REDIRECT_STATUSES:
             if redirect_count >= max_redirects:
@@ -237,17 +370,40 @@ def resolve_affiliate_url(
             current = validate_official_url(urljoin(response_url, location.strip()))
             item_id = extract_mlm_id(current)
             if item_id:
-                return item_id
+                return item_id, None
             continue
 
         if 200 <= status < 300:
             item_id = extract_product_id_from_html(body, base_url=response_url)
             if item_id:
-                return item_id
+                snapshot = extract_product_snapshot_from_html(
+                    body,
+                    base_url=response_url,
+                    item_id=item_id,
+                )
+                return item_id, snapshot
             raise LinkResolutionError("El destino oficial no contiene un ID de producto MLM")
         raise LinkResolutionError(f"Mercado Libre respondió con HTTP {status}")
 
     raise LinkResolutionError("No se pudo resolver el enlace afiliado")
+
+
+def resolve_affiliate_url(
+    affiliate_url: str,
+    *,
+    timeout: float = 10.0,
+    max_redirects: int = 10,
+    fetcher: Fetcher = _fetch_once,
+) -> str:
+    """Compatibilidad: devuelve solamente el ID MLM normalizado."""
+
+    item_id, _snapshot = resolve_affiliate_product(
+        affiliate_url,
+        timeout=timeout,
+        max_redirects=max_redirects,
+        fetcher=fetcher,
+    )
+    return item_id
 
 
 def _read_config(path: Path) -> list[dict[str, Any]]:
@@ -276,7 +432,7 @@ def resolve_config(
     fetcher: Fetcher = _fetch_once,
 ) -> list[dict[str, Any]]:
     resolved: list[dict[str, Any]] = []
-    cache: dict[str, str] = {}
+    cache: dict[str, tuple[str, dict[str, Any] | None]] = {}
     for index, entry in enumerate(entries):
         copied = dict(entry)
         existing_id = copied.get("id")
@@ -288,13 +444,16 @@ def resolve_config(
             if not isinstance(affiliate_url, str):
                 raise ValueError(f"products[{index}].affiliate_url es obligatorio")
             if affiliate_url not in cache:
-                cache[affiliate_url] = resolve_affiliate_url(
+                cache[affiliate_url] = resolve_affiliate_product(
                     affiliate_url,
                     timeout=timeout,
                     max_redirects=max_redirects,
                     fetcher=fetcher,
                 )
-            copied["id"] = cache[affiliate_url]
+            item_id, snapshot = cache[affiliate_url]
+            copied["id"] = item_id
+            if snapshot is not None:
+                copied["snapshot"] = snapshot
         resolved.append(copied)
     return resolved
 

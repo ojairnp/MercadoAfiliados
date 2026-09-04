@@ -101,6 +101,36 @@ class SyncProductsTests(unittest.TestCase):
         )
         self.assertEqual(first, second)
 
+    def test_affiliate_snapshot_does_not_require_oauth_client(self) -> None:
+        config = ProductConfig(
+            id="MLM3041581530",
+            affiliate_url="https://meli.la/example",
+            category="fitness",
+            enabled=True,
+            snapshot={
+                "title": "Kit de bandas elásticas",
+                "price": 257.79,
+                "currency": "MXN",
+                "image": "https://http2.mlstatic.com/product.webp",
+                "permalink": "https://articulo.mercadolibre.com.mx/MLM-3041581530-bandas-_JM",
+                "available": True,
+                "status": "active",
+                "condition": None,
+                "seller_id": None,
+                "official_store_id": None,
+            },
+        )
+        payload = synchronize(
+            [config],
+            client=None,
+            access_token=None,
+            existing={"schema_version": 1, "generated_at": None, "products": []},
+            timestamp="2026-09-04T16:00:00Z",
+        )
+        product = payload["products"][0]
+        self.assertEqual(product["price"], 257.79)
+        self.assertEqual(product["affiliate_url"], "https://meli.la/example")
+
 
 if __name__ == "__main__":
     unittest.main()

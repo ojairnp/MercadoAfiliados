@@ -35,6 +35,7 @@ class ProductConfig:
     affiliate_url: str
     category: str
     enabled: bool
+    snapshot: dict[str, Any] | None = None
 
 
 def _required_env(name: str) -> str:
@@ -73,6 +74,64 @@ def _category_is_prohibited(category: str) -> bool:
     return any(term in category.split("-") for term in PROHIBITED_CATEGORY_TERMS)
 
 
+def _validated_snapshot(value: Any, *, label: str) -> dict[str, Any] | None:
+    if value is None:
+        return None
+    if not isinstance(value, dict):
+        raise ValueError(f"{label}.snapshot debe ser un objeto")
+    allowed = {
+        "title",
+        "price",
+        "currency",
+        "image",
+        "permalink",
+        "available",
+        "status",
+        "condition",
+        "seller_id",
+        "official_store_id",
+    }
+    unknown = set(value) - allowed
+    if unknown:
+        raise ValueError(f"{label}.snapshot contiene campos no permitidos: {', '.join(sorted(unknown))}")
+    title = _clean_text(value.get("title"), maximum=200)
+    price = value.get("price")
+    currency = value.get("currency")
+    image = _validated_https_url(value.get("image"), allowed_hosts=("mlstatic.com",))
+    permalink = _validated_https_url(value.get("permalink"), allowed_hosts=("mercadolibre.com.mx",))
+    available = value.get("available")
+    status = _clean_text(value.get("status"), maximum=40)
+    if title is None:
+        raise ValueError(f"{label}.snapshot.title es inválido")
+    if not isinstance(price, (int, float)) or isinstance(price, bool) or price < 0:
+        raise ValueError(f"{label}.snapshot.price es inválido")
+    if currency != "MXN":
+        raise ValueError(f"{label}.snapshot.currency debe ser MXN")
+    if image is None or permalink is None:
+        raise ValueError(f"{label}.snapshot contiene una URL inválida")
+    if not isinstance(available, bool) or status is None:
+        raise ValueError(f"{label}.snapshot contiene disponibilidad o estado inválido")
+    condition = _clean_text(value.get("condition"), maximum=30)
+    seller_id = value.get("seller_id")
+    if not isinstance(seller_id, (int, str)) or isinstance(seller_id, bool):
+        seller_id = None
+    official_store_id = value.get("official_store_id")
+    if not isinstance(official_store_id, (int, str)) or isinstance(official_store_id, bool):
+        official_store_id = None
+    return {
+        "title": title,
+        "price": price,
+        "currency": currency,
+        "image": image,
+        "permalink": permalink,
+        "available": available,
+        "status": status,
+        "condition": condition,
+        "seller_id": seller_id,
+        "official_store_id": official_store_id,
+    }
+
+
 def load_config(path: Path) -> list[ProductConfig]:
     try:
         if path.stat().st_size > MAX_CONFIG_BYTES:
@@ -93,7 +152,7 @@ def load_config(path: Path) -> list[ProductConfig]:
         label = f"products[{index}]"
         if not isinstance(entry, dict):
             raise ValueError(f"{label} debe ser un objeto")
-        unknown = set(entry) - {"id", "affiliate_url", "category", "enabled"}
+        unknown = set(entry) - {"id", "affiliate_url", "category", "enabled", "snapshot"}
         if unknown:
             raise ValueError(f"{label} contiene campos no permitidos: {', '.join(sorted(unknown))}")
         item_id = entry.get("id")
@@ -118,6 +177,7 @@ def load_config(path: Path) -> list[ProductConfig]:
                 affiliate_url=_validate_affiliate_url(entry.get("affiliate_url")),
                 category=category,
                 enabled=enabled,
+                snapshot=_validated_snapshot(entry.get("snapshot"), label=label),
             )
         )
     return products
@@ -206,6 +266,28 @@ def _public_product(
     }
 
 
+def _public_product_from_snapshot(config: ProductConfig, *, timestamp: str) -> dict[str, Any]:
+    snapshot = config.snapshot
+    if snapshot is None:
+        raise MeliApiError(f"El artículo {config.id} no contiene una ficha afiliada")
+    return {
+        "id": config.id,
+        "title": snapshot["title"],
+        "price": snapshot["price"],
+        "currency": snapshot["currency"],
+        "image": snapshot["image"],
+        "permalink": snapshot["permalink"],
+        "affiliate_url": config.affiliate_url,
+        "category": config.category,
+        "available": snapshot["available"],
+        "status": snapshot["status"],
+        "condition": snapshot["condition"],
+        "seller_id": snapshot["seller_id"],
+        "official_store_id": snapshot["official_store_id"],
+        "updated_at": timestamp,
+    }
+
+
 def _without_timestamp(product: dict[str, Any]) -> dict[str, Any]:
     return {key: value for key, value in product.items() if key != "updated_at"}
 
@@ -213,8 +295,8 @@ def _without_timestamp(product: dict[str, Any]) -> dict[str, Any]:
 def synchronize(
     configs: list[ProductConfig],
     *,
-    client: MeliClient,
-    access_token: str,
+    client: MeliClient | None,
+    access_token: str | None,
     existing: dict[str, Any],
     timestamp: str,
 ) -> dict[str, Any]:
@@ -225,14 +307,22 @@ def synchronize(
         if isinstance(product, dict) and isinstance(product.get("id"), str)
     }
     items: dict[str, dict[str, Any]] = {}
-    ids = [product.id for product in enabled]
+    api_products = [product for product in enabled if product.snapshot is None]
+    if api_products and (client is None or access_token is None):
+        raise MeliApiError("Hay productos sin ficha afiliada y no hay acceso OAuth disponible")
+    ids = [product.id for product in api_products]
     for offset in range(0, len(ids), 20):
+        assert client is not None and access_token is not None
         items.update(client.get_items_bulk(ids[offset : offset + 20], access_token=access_token))
 
     generated: list[dict[str, Any]] = []
     for config in enabled:
-        price = client.get_sale_price(config.id, access_token=access_token)
-        product = _public_product(config, items[config.id], price, timestamp=timestamp)
+        if config.snapshot is not None:
+            product = _public_product_from_snapshot(config, timestamp=timestamp)
+        else:
+            assert client is not None and access_token is not None
+            price = client.get_sale_price(config.id, access_token=access_token)
+            product = _public_product(config, items[config.id], price, timestamp=timestamp)
         old = existing_products.get(config.id)
         if isinstance(old, dict) and _without_timestamp(old) == _without_timestamp(product):
             previous_timestamp = old.get("updated_at")
@@ -287,28 +377,33 @@ def run(args: argparse.Namespace) -> int:
     if args.validate_only:
         print("Configuración válida: hay al menos un producto habilitado.")
         return 0
-    if not args.next_refresh_token_file:
-        raise ValueError("Falta --next-refresh-token-file; es obligatorio para no perder la rotación OAuth")
     output_path = Path(args.output)
-    next_token_path = Path(args.next_refresh_token_file)
-    client_id = _required_env("MELI_CLIENT_ID")
-    client_secret = _required_env("MELI_CLIENT_SECRET")
-    refresh_token = _required_env("MELI_REFRESH_TOKEN")
-    client = MeliClient(timeout=args.timeout, max_retries=args.retries)
-
-    tokens = client.refresh_access_token(
-        client_id=client_id,
-        client_secret=client_secret,
-        refresh_token=refresh_token,
-    )
-    # Debe ocurrir inmediatamente: el token anterior ya quedó invalidado.
-    _atomic_write_secret(next_token_path, tokens.refresh_token)
+    enabled = [product for product in configs if product.enabled]
+    needs_oauth = any(product.snapshot is None for product in enabled)
+    client: MeliClient | None = None
+    access_token: str | None = None
+    if needs_oauth:
+        if not args.next_refresh_token_file:
+            raise ValueError("Falta --next-refresh-token-file; es obligatorio para no perder la rotación OAuth")
+        next_token_path = Path(args.next_refresh_token_file)
+        client_id = _required_env("MELI_CLIENT_ID")
+        client_secret = _required_env("MELI_CLIENT_SECRET")
+        refresh_token = _required_env("MELI_REFRESH_TOKEN")
+        client = MeliClient(timeout=args.timeout, max_retries=args.retries)
+        tokens = client.refresh_access_token(
+            client_id=client_id,
+            client_secret=client_secret,
+            refresh_token=refresh_token,
+        )
+        # Debe ocurrir inmediatamente: el token anterior ya quedó invalidado.
+        _atomic_write_secret(next_token_path, tokens.refresh_token)
+        access_token = tokens.access_token
 
     timestamp = datetime.now(UTC).replace(microsecond=0).isoformat().replace("+00:00", "Z")
     payload = synchronize(
         configs,
         client=client,
-        access_token=tokens.access_token,
+        access_token=access_token,
         existing=load_existing_output(output_path),
         timestamp=timestamp,
     )

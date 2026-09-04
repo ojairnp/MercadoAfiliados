@@ -9,6 +9,7 @@ from scripts.resolve_affiliate_links import (
     LinkResolutionError,
     extract_mlm_id,
     extract_product_id_from_html,
+    extract_product_snapshot_from_html,
     resolve_affiliate_url,
     resolve_config,
     _write_validated_config,
@@ -163,6 +164,43 @@ class ResolveAffiliateLinksTests(unittest.TestCase):
         self.assertEqual(
             resolve_affiliate_url("https://meli.la/social", fetcher=fetch),
             "MLM3041581530",
+        )
+
+    def test_extracts_public_snapshot_only_from_matching_product_card(self) -> None:
+        html = """
+        <div class="poly-card">
+          <img class="poly-component__picture" src="https://http2.mlstatic.com/other.webp">
+          <a class="poly-component__title" href="/MLM-999999999-otro-_JM">Otro</a>
+          <div class="poly-price__current">
+            <span data-andes-money-amount-fraction="true">999</span>
+          </div>
+        </div>
+        <div class="poly-card poly-card--xlarge">
+          <img class="poly-component__picture"
+               src="https://http2.mlstatic.com/product.webp">
+          <a class="poly-component__title"
+             href="https://articulo.mercadolibre.com.mx/MLM-3041581530-bandas-_JM?tracking=1">
+            Kit de bandas elásticas
+          </a>
+          <div class="poly-price__current">
+            <span data-andes-money-amount-fraction="true">257</span>
+            <span data-andes-money-amount-cents="true">79</span>
+          </div>
+        </div>
+        """
+        snapshot = extract_product_snapshot_from_html(
+            html,
+            base_url="https://www.mercadolibre.com.mx/social/jairice",
+            item_id="MLM3041581530",
+        )
+        self.assertIsNotNone(snapshot)
+        assert snapshot is not None
+        self.assertEqual(snapshot["title"], "Kit de bandas elásticas")
+        self.assertEqual(snapshot["price"], 257.79)
+        self.assertEqual(snapshot["currency"], "MXN")
+        self.assertEqual(
+            snapshot["permalink"],
+            "https://articulo.mercadolibre.com.mx/MLM-3041581530-bandas-_JM",
         )
 
 

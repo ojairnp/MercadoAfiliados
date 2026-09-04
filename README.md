@@ -6,8 +6,8 @@ MVP seguro para actualizar recomendaciones fitness de **Vero & Beth** con inform
 
 1. Agregas el enlace afiliado y la categoría en `config/products.json`; el `id` es opcional.
 2. GitHub Actions sigue las redirecciones oficiales y obtiene automáticamente el ID `MLM...`.
-3. Obtiene un access token temporal mediante OAuth.
-4. Consulta el artículo con `/items/bulk` y su precio actual con `/sale_price`.
+3. Lee la ficha pública mostrada por la propia página afiliada: título, precio, imagen y permalink.
+4. Conserva OAuth y la API como compatibilidad para configuraciones antiguas que solo incluyan `id`.
 5. Genera `public/data/products.json` sin credenciales y hace commit solo si cambió.
 
 No modifica todavía `verobethfit.netlify.app` y no genera análisis con IA.
@@ -35,7 +35,7 @@ Reglas:
 
 ## Configurar OAuth y GitHub
 
-Sigue [docs/OAUTH_SETUP.md](docs/OAUTH_SETUP.md). Los únicos pasos manuales son:
+OAuth solo se necesita para configuraciones antiguas sin ficha afiliada. En ese caso, sigue [docs/OAUTH_SETUP.md](docs/OAUTH_SETUP.md):
 
 1. autorizar una vez la aplicación con PKCE;
 2. copiar el refresh token inicial a GitHub Secrets;
@@ -61,7 +61,7 @@ Las pruebas no llaman a Mercado Libre y usan respuestas simuladas.
 Cada producto incluye solamente:
 
 - ID, título, precio y moneda;
-- URL técnica de imagen entregada por la API y permalink;
+- URL técnica de imagen mostrada por la página oficial y permalink;
 - enlace afiliado configurado;
 - categoría, disponibilidad y estado;
 - condición e identificadores públicos del vendedor/tienda oficial;
@@ -72,7 +72,8 @@ No incluye access tokens, refresh tokens, secretos ni credenciales.
 ## Seguridad y comportamiento ante fallos
 
 - Biblioteca estándar de Python; sin dependencias de terceros para el MVP.
-- Timeout, rate limiting conservador, reintentos y backoff con jitter para 429/5xx.
+- Lectura acotada del HTML oficial, sin ejecutar scripts ni seguir dominios externos.
+- Para el modo heredado con API: timeout, rate limiting conservador, reintentos y backoff con jitter para 429/5xx.
 - Errores explícitos para 401, 403 y 404.
 - Validación estricta de JSON, IDs, categorías, moneda, sitio y URLs.
 - El resolvedor sigue redirecciones manualmente y solo permite HTTPS, puerto 443 y dominios oficiales de Mercado Libre; bloquea hosts parecidos, credenciales embebidas, ciclos y respuestas excesivas.

@@ -32,20 +32,6 @@ jobs:
         with:
           python-version: "3.12"
 
-      - name: Validar variables y secretos requeridos
-        shell: bash
-        run: |
-          set -euo pipefail
-          missing=0
-          for name in MELI_CLIENT_ID MELI_REDIRECT_URI MELI_CLIENT_SECRET MELI_REFRESH_TOKEN GH_TOKEN; do
-            if [[ -z "${!name:-}" ]]; then
-              echo "::error::Falta configuración requerida: ${name}"
-              missing=1
-            fi
-          done
-          [[ "$missing" -eq 0 ]]
-          gh api "repos/${GITHUB_REPOSITORY}/actions/secrets/public-key" >/dev/null
-
       - name: Ejecutar pruebas
         run: python -m unittest discover -s tests -v
 
@@ -80,11 +66,7 @@ jobs:
           set -euo pipefail
           trap 'rm -f "$NEXT_REFRESH_TOKEN_FILE"' EXIT
           if [[ ! -s "$NEXT_REFRESH_TOKEN_FILE" ]]; then
-            if [[ "$SYNC_OUTCOME" == "success" ]]; then
-              echo "::error::La API no generó un refresh token nuevo."
-              exit 1
-            fi
-            echo "No se consumió el refresh token; no hay rotación pendiente."
+            echo "La ficha afiliada no necesitó OAuth; no hay rotación pendiente."
             exit 0
           fi
           gh secret set MELI_REFRESH_TOKEN --repo "$GITHUB_REPOSITORY" < "$NEXT_REFRESH_TOKEN_FILE"

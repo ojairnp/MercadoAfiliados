@@ -6,13 +6,12 @@ Revisión documental: **2026-09-03**.
 config/products.json
         │
         ▼
-resolvedor meli.la/mercado.li ──► config temporal con IDs MLM
+resolvedor meli.la/mercado.li ──► config temporal con ID + ficha pública
         │
         ▼
-GitHub Actions ──► OAuth refresh ──► Mercado Libre API
-        │                                  │
-        │                                  ├─ /items/bulk?ids=
-        │                                  └─ /items/{id}/sale_price
+GitHub Actions ──► página afiliada oficial
+        │
+        └──► OAuth/API solo para config heredada sin ficha
         ▼
 public/data/products.json ──► futura integración Vero & Beth
 ```
@@ -20,15 +19,14 @@ public/data/products.json ──► futura integración Vero & Beth
 ## Decisiones
 
 - El navegador nunca recibe secretos ni llama a OAuth.
-- Los enlaces cortos se resuelven antes de OAuth y el archivo con IDs vive únicamente en `runner.temp`.
+- Los enlaces cortos se resuelven antes de OAuth y el archivo con IDs y fichas vive únicamente en `runner.temp`.
 - Cada salto se valida antes de solicitarlo: solo HTTPS en `meli.la`, `mercado.li`, `mercadolibre.com.mx`, `mercadolibre.com` o sus subdominios, sin credenciales embebidas ni puertos alternos.
-- Las páginas sociales oficiales se inspeccionan de forma acotada para obtener únicamente el enlace marcado como **Ir a producto**, evitando confundir recomendaciones secundarias con el producto compartido.
+- Las páginas sociales oficiales se inspeccionan de forma acotada para obtener la tarjeta cuyo enlace coincide con el ID compartido: título, precio, imagen y permalink.
 - La configuración conserva `affiliate_url`; el permalink de la API nunca lo reemplaza.
-- La consulta de ítems usa `/items/bulk?ids=` porque Mercado Libre anunció la retirada del multiget `/items?ids=` para el 25/10/2026.
-- El precio se obtiene de `/items/{id}/sale_price?context=channel_marketplace`, porque los campos de precio de `/items` están en retirada progresiva.
-- Las imágenes no se descargan: se conserva únicamente la URL HTTPS entregada por la API (`pictures[].secure_url`) como referencia técnica. No debe renderizarse en Vero & Beth hasta confirmar la autorización de uso aplicable.
+- La API de ítems queda como compatibilidad para entradas antiguas con `id` pero sin ficha. Esas consultas pueden requerir que el token sea propietario de la publicación.
+- Las imágenes no se descargan: se conserva únicamente la URL HTTPS de `mlstatic.com` mostrada por Mercado Libre como referencia técnica. No debe renderizarse en Vero & Beth hasta confirmar la autorización de uso aplicable.
 - La actualización es atómica: si falla cualquier producto, el JSON público anterior queda intacto.
-- Los refresh tokens de Mercado Libre son rotativos y de un solo uso. El workflow guarda el nuevo valor en `MELI_REFRESH_TOKEN` mediante un token de GitHub limitado a este repositorio y al permiso **Secrets: write**.
+- Cuando una entrada heredada necesita OAuth, los refresh tokens siguen rotándose de forma segura. Las fichas afiliadas no consumen ni modifican el token.
 - La salida es determinista. `updated_at` solo cambia cuando cambian los datos públicos del producto; así GitHub no recibe commits vacíos cada 12 horas.
 
 ## Alcance de afiliados
