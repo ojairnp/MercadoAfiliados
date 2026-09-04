@@ -1,5 +1,86 @@
 {
   "schema_version": 1,
-  "generated_at": null,
-  "products": []
+  "generated_at": "2026-09-04T16:57:24Z",
+  "products": [
+    {
+      "id": "MLM3041581530",
+      "title": "Kit De Bandas Elásticas De Resistencia 150lb Ligas Ejercicio",
+      "price": 257.79,
+      "currency": "MXN",
+      "image": "https://http2.mlstatic.com/D_Q_NP_2X_860646-CBT76543881547_052024-V.webp",
+      "permalink": "https://articulo.mercadolibre.com.mx/MLM-3041581530-kit-de-bandas-elasticas-de-resistencia-150lb-ligas-ejercicio-_JM",
+      "affiliate_url": "https://meli.la/2y6dTo9",
+      "category": "fitness",
+      "available": true,
+      "status": "active",
+      "condition": null,
+      "seller_id": null,
+      "official_store_id": null,
+      "updated_at": "2026-09-04T16:57:24Z"
+    },
+    {
+      "id": "MLM1489110777",
+      "title": "Tapete Yoga Portatil Ejercicio Pilates Correa Transportadora",
+      "price": 260.93,
+      "currency": "MXN",
+      "image": "https://http2.mlstatic.com/D_Q_NP_2X_792983-MLM91882081920_092025-V.webp",
+      "permalink": "https://articulo.mercadolibre.com.mx/MLM-1489110777-tapete-yoga-portatil-ejercicio-pilates-correa-transportadora-_JM",
+      "affiliate_url": "https://meli.la/16dSv3q",
+      "category": "fitness",
+      "available": true,
+      "status": "active",
+      "condition": null,
+      "seller_id": null,
+      "official_store_id": null,
+      "updated_at": "2026-09-04T16:57:24Z"
+    },
+    {
+      "id": "MLM1495903462",
+      "title": "Set De Mancuernas Ajustables Pesas Altera Barra Recta 15 Kg",
+      "price": 599,
+      "currency": "MXN",
+      "image": "https://http2.mlstatic.com/D_Q_NP_2X_931906-MLM93568668489_092025-V.webp",
+      "permalink": "https://articulo.mercadolibre.com.mx/MLM-1495903462-set-de-mancuernas-ajustables-pesas-altera-barra-recta-15-kg-_JM",
+      "affiliate_url": "https://meli.la/1gZ52Ws",
+      "category": "fitness",
+      "available": true,
+      "status": "active",
+      "condition": null,
+      "seller_id": null,
+      "official_store_id": null,
+      "updated_at": "2026-09-04T16:57:24Z"
+    },
+    {
+      "id": "MLM3046350181",
+      "title": "Cuerdas Para Saltar Y Para Brincar 4pzs Ejercicio Gimnasio",
+      "price": 83.95,
+      "currency": "MXN",
+      "image": "https://http2.mlstatic.com/D_Q_NP_2X_667807-CBT114461708567_072026-V.webp",
+      "permalink": "https://articulo.mercadolibre.com.mx/MLM-3046350181-cuerdas-para-saltar-y-para-brincar-4pzs-ejercicio-gimnasio-_JM",
+      "affiliate_url": "https://meli.la/1bxEWVj",
+      "category": "fitness",
+      "available": true,
+      "status": "active",
+      "condition": null,
+      "seller_id": null,
+      "official_store_id": null,
+      "updated_at": "2026-09-04T16:57:24Z"
+    },
+    {
+      "id": "MLM2869967750",
+      "title": "Hirola Rodillo Masajeador De Espuma De Alta Densidad",
+      "price": 219.99,
+      "currency": "MXN",
+      "image": "https://http2.mlstatic.com/D_Q_NP_2X_901291-MLM89489312533_082025-V.webp",
+      "permalink": "https://articulo.mercadolibre.com.mx/MLM-2869967750-hirola-rodillo-masajeador-de-espuma-de-alta-densidad-_JM",
+      "affiliate_url": "https://meli.la/1YttGn8",
+      "category": "fitness",
+      "available": true,
+      "status": "active",
+      "condition": null,
+      "seller_id": null,
+      "official_store_id": null,
+      "updated_at": "2026-09-04T16:57:24Z"
+    }
+  ]
 }
