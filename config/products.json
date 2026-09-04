@@ -1,1 +1,27 @@
-[]
+[
+  {
+    "affiliate_url": "https://meli.la/2y6dTo9",
+    "category": "fitness",
+    "enabled": true
+  },
+  {
+    "affiliate_url": "https://meli.la/16dSv3q",
+    "category": "fitness",
+    "enabled": true
+  },
+  {
+    "affiliate_url": "https://meli.la/1gZ52Ws",
+    "category": "fitness",
+    "enabled": true
+  },
+  {
+    "affiliate_url": "https://meli.la/1bxEWVj",
+    "category": "fitness",
+    "enabled": true
+  },
+  {
+    "affiliate_url": "https://meli.la/1YttGn8",
+    "category": "fitness",
+    "enabled": true
+  }
+]

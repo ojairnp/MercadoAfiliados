@@ -32,7 +32,7 @@ jobs:
         with:
           python-version: "3.12"
 
-      - name: Validar configuración sin consumir el refresh token
+      - name: Validar variables y secretos requeridos
         shell: bash
         run: |
           set -euo pipefail
@@ -44,11 +44,21 @@ jobs:
             fi
           done
           [[ "$missing" -eq 0 ]]
-          python scripts/sync_products.py --config config/products.json --validate-only
           gh api "repos/${GITHUB_REPOSITORY}/actions/secrets/public-key" >/dev/null
 
       - name: Ejecutar pruebas
         run: python -m unittest discover -s tests -v
+
+      - name: Resolver enlaces afiliados a IDs MLM
+        shell: bash
+        run: |
+          set -euo pipefail
+          python scripts/resolve_affiliate_links.py \
+            --config config/products.json \
+            --output "${RUNNER_TEMP}/products-resolved.json"
+          python scripts/sync_products.py \
+            --config "${RUNNER_TEMP}/products-resolved.json" \
+            --validate-only
 
       - name: Sincronizar productos
         id: sync
@@ -56,7 +66,7 @@ jobs:
           NEXT_REFRESH_TOKEN_FILE: ${{ runner.temp }}/meli_refresh_token
         run: >-
           python scripts/sync_products.py
-          --config config/products.json
+          --config "${RUNNER_TEMP}/products-resolved.json"
           --output public/data/products.json
           --next-refresh-token-file "$NEXT_REFRESH_TOKEN_FILE"
 

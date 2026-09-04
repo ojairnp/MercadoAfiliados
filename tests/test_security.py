@@ -28,6 +28,18 @@ class SecurityTests(unittest.TestCase):
         self.assertNotIn('echo "$MELI_CLIENT_SECRET"', workflow)
         self.assertNotIn('echo "$MELI_REFRESH_TOKEN"', workflow)
 
+    def test_workflow_resolves_ids_before_syncing(self) -> None:
+        workflow = (ROOT / ".github/workflows/meli-sync.yml").read_text(encoding="utf-8")
+        resolver_position = workflow.index("python scripts/resolve_affiliate_links.py")
+        sync_position = workflow.index("- name: Sincronizar productos")
+        self.assertLess(resolver_position, sync_position)
+        self.assertIn('--config "${RUNNER_TEMP}/products-resolved.json"', workflow)
+
+    def test_source_config_contains_no_credentials(self) -> None:
+        config = (ROOT / "config/products.json").read_text(encoding="utf-8").lower()
+        for forbidden in ("access_token", "refresh_token", "client_secret", "authorization"):
+            self.assertNotIn(forbidden, config)
+
 
 if __name__ == "__main__":
     unittest.main()

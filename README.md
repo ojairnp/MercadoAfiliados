@@ -4,11 +4,11 @@ MVP seguro para actualizar recomendaciones fitness de **Vero & Beth** con inform
 
 ## Qué resuelve esta primera versión
 
-1. Agregas un ID `MLM...`, enlace afiliado y categoría en `config/products.json`.
-2. GitHub Actions obtiene un access token temporal mediante OAuth.
-3. Consulta el artículo con `/items/bulk` y su precio actual con `/sale_price`.
-4. Genera `public/data/products.json` sin credenciales.
-5. Hace commit únicamente si cambió información pública.
+1. Agregas el enlace afiliado y la categoría en `config/products.json`; el `id` es opcional.
+2. GitHub Actions sigue las redirecciones oficiales y obtiene automáticamente el ID `MLM...`.
+3. Obtiene un access token temporal mediante OAuth.
+4. Consulta el artículo con `/items/bulk` y su precio actual con `/sale_price`.
+5. Genera `public/data/products.json` sin credenciales y hace commit solo si cambió.
 
 No modifica todavía `verobethfit.netlify.app` y no genera análisis con IA.
 
@@ -17,8 +17,7 @@ No modifica todavía `verobethfit.netlify.app` y no genera análisis con IA.
 ```json
 [
   {
-    "id": "MLM123456789",
-    "affiliate_url": "https://mercado.li/TU_ENLACE",
+    "affiliate_url": "https://meli.la/TU_ENLACE",
     "category": "basculas",
     "enabled": true
   }
@@ -27,7 +26,8 @@ No modifica todavía `verobethfit.netlify.app` y no genera análisis con IA.
 
 Reglas:
 
-- `id` debe ser un artículo mexicano con formato `MLM` + dígitos.
+- `id` es opcional. Si ya existe, debe usar el formato `MLM` + dígitos y no se consulta la red para resolverlo.
+- Sin `id`, usa una liga corta `https://meli.la/...` o `https://mercado.li/...`; el workflow obtiene el ID automáticamente.
 - `affiliate_url` debe ser el enlace HTTPS generado en tus herramientas de afiliado. Nunca se reemplaza con el permalink normal.
 - `category` es un slug en minúsculas, por ejemplo `basculas` o `accesorios-gym`.
 - Los productos desactivados no aparecen en la salida.
@@ -75,6 +75,7 @@ No incluye access tokens, refresh tokens, secretos ni credenciales.
 - Timeout, rate limiting conservador, reintentos y backoff con jitter para 429/5xx.
 - Errores explícitos para 401, 403 y 404.
 - Validación estricta de JSON, IDs, categorías, moneda, sitio y URLs.
+- El resolvedor sigue redirecciones manualmente y solo permite HTTPS, puerto 443 y dominios oficiales de Mercado Libre; bloquea hosts parecidos, credenciales embebidas, ciclos y respuestas excesivas.
 - Escritura atómica: una sincronización parcial nunca sobrescribe el último JSON correcto.
 - Logs sin cuerpos OAuth ni valores secretos.
 - Permisos mínimos del workflow: `contents: write` únicamente para el `GITHUB_TOKEN` temporal.

@@ -6,6 +6,9 @@ Revisión documental: **2026-09-03**.
 config/products.json
         │
         ▼
+resolvedor meli.la/mercado.li ──► config temporal con IDs MLM
+        │
+        ▼
 GitHub Actions ──► OAuth refresh ──► Mercado Libre API
         │                                  │
         │                                  ├─ /items/bulk?ids=
@@ -17,6 +20,9 @@ public/data/products.json ──► futura integración Vero & Beth
 ## Decisiones
 
 - El navegador nunca recibe secretos ni llama a OAuth.
+- Los enlaces cortos se resuelven antes de OAuth y el archivo con IDs vive únicamente en `runner.temp`.
+- Cada salto se valida antes de solicitarlo: solo HTTPS en `meli.la`, `mercado.li`, `mercadolibre.com.mx`, `mercadolibre.com` o sus subdominios, sin credenciales embebidas ni puertos alternos.
+- Las páginas sociales oficiales se inspeccionan de forma acotada para obtener únicamente el enlace marcado como **Ir a producto**, evitando confundir recomendaciones secundarias con el producto compartido.
 - La configuración conserva `affiliate_url`; el permalink de la API nunca lo reemplaza.
 - La consulta de ítems usa `/items/bulk?ids=` porque Mercado Libre anunció la retirada del multiget `/items?ids=` para el 25/10/2026.
 - El precio se obtiene de `/items/{id}/sale_price?context=channel_marketplace`, porque los campos de precio de `/items` están en retirada progresiva.
