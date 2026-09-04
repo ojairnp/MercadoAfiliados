@@ -17,8 +17,8 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     env:
-      MELI_CLIENT_ID: ${{ vars.MELI_CLIENT_ID }}
-      MELI_REDIRECT_URI: ${{ vars.MELI_REDIRECT_URI }}
+      MELI_CLIENT_ID: ${{ secrets.MELI_CLIENT_ID }}
+      MELI_REDIRECT_URI: ${{ secrets.MELI_REDIRECT_URI }}
       MELI_CLIENT_SECRET: ${{ secrets.MELI_CLIENT_SECRET }}
       MELI_REFRESH_TOKEN: ${{ secrets.MELI_REFRESH_TOKEN }}
       GH_TOKEN: ${{ secrets.MELI_SECRET_ROTATION_TOKEN }}

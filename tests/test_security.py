@@ -35,6 +35,13 @@ class SecurityTests(unittest.TestCase):
         self.assertLess(resolver_position, sync_position)
         self.assertIn('--config "${RUNNER_TEMP}/products-resolved.json"', workflow)
 
+    def test_workflow_reads_existing_github_secrets(self) -> None:
+        workflow = (ROOT / ".github/workflows/meli-sync.yml").read_text(encoding="utf-8")
+        self.assertIn("MELI_CLIENT_ID: ${{ secrets.MELI_CLIENT_ID }}", workflow)
+        self.assertIn("MELI_REDIRECT_URI: ${{ secrets.MELI_REDIRECT_URI }}", workflow)
+        self.assertNotIn("MELI_CLIENT_ID: ${{ vars.MELI_CLIENT_ID }}", workflow)
+        self.assertNotIn("MELI_REDIRECT_URI: ${{ vars.MELI_REDIRECT_URI }}", workflow)
+
     def test_source_config_contains_no_credentials(self) -> None:
         config = (ROOT / "config/products.json").read_text(encoding="utf-8").lower()
         for forbidden in ("access_token", "refresh_token", "client_secret", "authorization"):
