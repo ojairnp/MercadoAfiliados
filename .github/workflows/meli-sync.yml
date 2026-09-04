@@ -1,0 +1,93 @@
+name: Sincronizar productos de Mercado Libre
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "17 */12 * * *"
+
+concurrency:
+  group: meli-products-sync
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      MELI_CLIENT_ID: ${{ vars.MELI_CLIENT_ID }}
+      MELI_REDIRECT_URI: ${{ vars.MELI_REDIRECT_URI }}
+      MELI_CLIENT_SECRET: ${{ secrets.MELI_CLIENT_SECRET }}
+      MELI_REFRESH_TOKEN: ${{ secrets.MELI_REFRESH_TOKEN }}
+      GH_TOKEN: ${{ secrets.MELI_SECRET_ROTATION_TOKEN }}
+      NEXT_REFRESH_TOKEN_FILE: ${{ runner.temp }}/meli_refresh_token
+
+    steps:
+      - name: Descargar repositorio
+        uses: actions/checkout@v4
+
+      - name: Configurar Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Validar configuración sin consumir el refresh token
+        shell: bash
+        run: |
+          set -euo pipefail
+          missing=0
+          for name in MELI_CLIENT_ID MELI_REDIRECT_URI MELI_CLIENT_SECRET MELI_REFRESH_TOKEN GH_TOKEN; do
+            if [[ -z "${!name:-}" ]]; then
+              echo "::error::Falta configuración requerida: ${name}"
+              missing=1
+            fi
+          done
+          [[ "$missing" -eq 0 ]]
+          python scripts/sync_products.py --config config/products.json --validate-only
+          gh api "repos/${GITHUB_REPOSITORY}/actions/secrets/public-key" >/dev/null
+
+      - name: Ejecutar pruebas
+        run: python -m unittest discover -s tests -v
+
+      - name: Sincronizar productos
+        id: sync
+        run: >-
+          python scripts/sync_products.py
+          --config config/products.json
+          --output public/data/products.json
+          --next-refresh-token-file "$NEXT_REFRESH_TOKEN_FILE"
+
+      - name: Guardar el refresh token rotado
+        if: ${{ always() && steps.sync.outcome != 'skipped' }}
+        shell: bash
+        env:
+          SYNC_OUTCOME: ${{ steps.sync.outcome }}
+        run: |
+          set -euo pipefail
+          trap 'rm -f "$NEXT_REFRESH_TOKEN_FILE"' EXIT
+          if [[ ! -s "$NEXT_REFRESH_TOKEN_FILE" ]]; then
+            if [[ "$SYNC_OUTCOME" == "success" ]]; then
+              echo "::error::La API no generó un refresh token nuevo."
+              exit 1
+            fi
+            echo "No se consumió el refresh token; no hay rotación pendiente."
+            exit 0
+          fi
+          gh secret set MELI_REFRESH_TOKEN --repo "$GITHUB_REPOSITORY" < "$NEXT_REFRESH_TOKEN_FILE"
+          echo "Refresh token rotado de forma segura en GitHub Secrets."
+
+      - name: Publicar JSON solo cuando cambie
+        shell: bash
+        run: |
+          set -euo pipefail
+          if git diff --quiet -- public/data/products.json; then
+            echo "No hubo cambios públicos."
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add public/data/products.json
+          git commit -m "chore(data): actualizar productos de Mercado Libre"
+          git push

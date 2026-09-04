@@ -1,0 +1,33 @@
+name: Validar proyecto
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  tests:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Descargar repositorio
+        uses: actions/checkout@v4
+
+      - name: Configurar Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Revisar sintaxis e imports
+        run: python -m compileall -q scripts tests
+
+      - name: Validar JSON
+        run: |
+          python -m json.tool config/products.json >/dev/null
+          python -m json.tool config/products.example.json >/dev/null
+          python -m json.tool public/data/products.json >/dev/null
+
+      - name: Ejecutar pruebas
+        run: python -m unittest discover -s tests -v
