@@ -4,6 +4,7 @@ import unittest
 from io import BytesIO
 from unittest.mock import Mock
 from urllib.error import HTTPError
+from urllib.parse import parse_qs, urlparse
 
 from scripts.meli_client import MeliApiError, MeliClient
 
@@ -31,6 +32,10 @@ class MeliClientTests(unittest.TestCase):
         called_url = client._request_json.call_args.args[1]  # type: ignore[union-attr]
         self.assertIn("/items/bulk?", called_url)
         self.assertNotIn("/items?ids=", called_url)
+        attributes = parse_qs(urlparse(called_url).query)["attributes"][0].split(",")
+        self.assertIn("id", attributes)
+        self.assertIn("status_code", attributes)
+        self.assertIn("body.id", attributes)
 
     def test_bulk_fails_if_an_item_is_omitted(self) -> None:
         client = MeliClient(min_request_interval=0)
@@ -50,6 +55,30 @@ class MeliClientTests(unittest.TestCase):
         )
         result = client.get_items_bulk(["MLM123456789"], access_token="temporary")
         self.assertEqual(result["MLM123456789"]["title"], "Báscula")
+
+    def test_bulk_accepts_confirmed_body_when_projection_omits_status(self) -> None:
+        client = MeliClient(min_request_interval=0)
+        client._request_json = Mock(  # type: ignore[method-assign]
+            return_value=[
+                {
+                    "body": {"id": "MLM123456789", "title": "Báscula"},
+                }
+            ]
+        )
+        result = client.get_items_bulk(["MLM123456789"], access_token="temporary")
+        self.assertEqual(result["MLM123456789"]["title"], "Báscula")
+
+    def test_bulk_does_not_infer_success_for_unrequested_body_id(self) -> None:
+        client = MeliClient(min_request_interval=0)
+        client._request_json = Mock(  # type: ignore[method-assign]
+            return_value=[
+                {
+                    "body": {"id": "MLM999999999", "title": "Otro"},
+                }
+            ]
+        )
+        with self.assertRaisesRegex(MeliApiError, "status_code=None"):
+            client.get_items_bulk(["MLM123456789"], access_token="temporary")
 
     def test_bulk_accepts_legacy_code_field(self) -> None:
         client = MeliClient(min_request_interval=0)

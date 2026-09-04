@@ -223,6 +223,8 @@ class MeliClient:
             raise ValueError("get_items_bulk acepta como máximo 20 IDs por lote")
         attributes = ",".join(
             (
+                "id",
+                "status_code",
                 "body.id",
                 "body.site_id",
                 "body.title",
@@ -259,6 +261,16 @@ class MeliClient:
             if status_code is None:
                 # Compatibilidad defensiva con la forma verbose anterior.
                 status_code = entry.get("code")
+            if (
+                status_code is None
+                and isinstance(body, dict)
+                and isinstance(body_id, str)
+                and body_id in requested_ids
+                and (not isinstance(root_id, str) or root_id == body_id)
+            ):
+                # La proyección `attributes` puede omitir el metadato verbose.
+                # Un body con ID solicitado y consistente confirma el éxito.
+                status_code = 200
             if not isinstance(item_id, str) and index < len(ids):
                 # Solo se usa para identificar de forma segura un error por posición;
                 # nunca se acepta como resultado exitoso sin un ID confirmado.
