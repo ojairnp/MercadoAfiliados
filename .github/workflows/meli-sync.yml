@@ -22,7 +22,6 @@ jobs:
       MELI_CLIENT_SECRET: ${{ secrets.MELI_CLIENT_SECRET }}
       MELI_REFRESH_TOKEN: ${{ secrets.MELI_REFRESH_TOKEN }}
       GH_TOKEN: ${{ secrets.MELI_SECRET_ROTATION_TOKEN }}
-      NEXT_REFRESH_TOKEN_FILE: ${{ runner.temp }}/meli_refresh_token
 
     steps:
       - name: Descargar repositorio
@@ -53,6 +52,8 @@ jobs:
 
       - name: Sincronizar productos
         id: sync
+        env:
+          NEXT_REFRESH_TOKEN_FILE: ${{ runner.temp }}/meli_refresh_token
         run: >-
           python scripts/sync_products.py
           --config config/products.json
@@ -63,6 +64,7 @@ jobs:
         if: ${{ always() && steps.sync.outcome != 'skipped' }}
         shell: bash
         env:
+          NEXT_REFRESH_TOKEN_FILE: ${{ runner.temp }}/meli_refresh_token
           SYNC_OUTCOME: ${{ steps.sync.outcome }}
         run: |
           set -euo pipefail
