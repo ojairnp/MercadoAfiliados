@@ -247,19 +247,36 @@ class MeliClient:
         if not isinstance(payload, list):
             raise MeliApiError("La respuesta de /items/bulk no es una lista")
         results: dict[str, dict[str, Any]] = {}
-        for entry in payload:
+        requested_ids = set(ids)
+        for index, entry in enumerate(payload):
             if not isinstance(entry, dict):
                 raise MeliApiError("/items/bulk devolvió una entrada inválida")
-            item_id = entry.get("id")
-            status_code = entry.get("status_code")
             body = entry.get("body")
-            if not isinstance(item_id, str):
-                raise MeliApiError("/items/bulk devolvió una entrada sin id")
+            root_id = entry.get("id")
+            body_id = body.get("id") if isinstance(body, dict) else None
+            item_id = root_id if isinstance(root_id, str) else body_id
+            status_code = entry.get("status_code")
+            if status_code is None:
+                # Compatibilidad defensiva con la forma verbose anterior.
+                status_code = entry.get("code")
+            if not isinstance(item_id, str) and index < len(ids):
+                # Solo se usa para identificar de forma segura un error por posición;
+                # nunca se acepta como resultado exitoso sin un ID confirmado.
+                error_item_id = ids[index]
+            else:
+                error_item_id = item_id
             if status_code != 200 or not isinstance(body, dict):
+                label = error_item_id if isinstance(error_item_id, str) else "desconocido"
                 raise MeliApiError(
-                    f"No se pudo consultar el artículo {item_id} (status_code={status_code})",
+                    f"No se pudo consultar el artículo {label} (status_code={status_code})",
                     status_code=status_code if isinstance(status_code, int) else None,
                 )
+            if not isinstance(item_id, str):
+                raise MeliApiError("/items/bulk devolvió una entrada sin id")
+            if item_id not in requested_ids:
+                raise MeliApiError("/items/bulk devolvió un id no solicitado")
+            if isinstance(root_id, str) and isinstance(body_id, str) and root_id != body_id:
+                raise MeliApiError(f"/items/bulk devolvió IDs inconsistentes para {item_id}")
             results[item_id] = body
         missing = set(ids) - set(results)
         if missing:

@@ -38,6 +38,51 @@ class MeliClientTests(unittest.TestCase):
         with self.assertRaisesRegex(MeliApiError, "omitió"):
             client.get_items_bulk(["MLM123456789"], access_token="temporary")
 
+    def test_bulk_accepts_confirmed_id_inside_body_when_root_id_is_omitted(self) -> None:
+        client = MeliClient(min_request_interval=0)
+        client._request_json = Mock(  # type: ignore[method-assign]
+            return_value=[
+                {
+                    "status_code": 200,
+                    "body": {"id": "MLM123456789", "title": "Báscula"},
+                }
+            ]
+        )
+        result = client.get_items_bulk(["MLM123456789"], access_token="temporary")
+        self.assertEqual(result["MLM123456789"]["title"], "Báscula")
+
+    def test_bulk_accepts_legacy_code_field(self) -> None:
+        client = MeliClient(min_request_interval=0)
+        client._request_json = Mock(  # type: ignore[method-assign]
+            return_value=[
+                {
+                    "code": 200,
+                    "body": {"id": "MLM123456789", "title": "Báscula"},
+                }
+            ]
+        )
+        result = client.get_items_bulk(["MLM123456789"], access_token="temporary")
+        self.assertEqual(result["MLM123456789"]["title"], "Báscula")
+
+    def test_bulk_reports_status_for_error_entry_without_exposing_body(self) -> None:
+        client = MeliClient(min_request_interval=0)
+        client._request_json = Mock(  # type: ignore[method-assign]
+            return_value=[
+                {
+                    "status_code": 403,
+                    "body": {"message": "private diagnostic", "access_token": "never-log-this"},
+                }
+            ]
+        )
+        with self.assertRaises(MeliApiError) as captured:
+            client.get_items_bulk(["MLM123456789"], access_token="temporary")
+        self.assertEqual(captured.exception.status_code, 403)
+        message = str(captured.exception)
+        self.assertIn("MLM123456789", message)
+        self.assertIn("status_code=403", message)
+        self.assertNotIn("private diagnostic", message)
+        self.assertNotIn("never-log-this", message)
+
     def test_sale_price_uses_current_price_resource(self) -> None:
         client = MeliClient(min_request_interval=0)
         client._request_json = Mock(return_value={"amount": 135, "currency_id": "MXN"})  # type: ignore[method-assign]
