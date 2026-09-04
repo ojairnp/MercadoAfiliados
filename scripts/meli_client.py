@@ -19,6 +19,21 @@ from urllib.request import Request, urlopen
 API_BASE_URL = "https://api.mercadolibre.com"
 RETRYABLE_STATUS = {429, 500, 502, 503, 504}
 MAX_RESPONSE_BYTES = 5_000_000
+ITEM_ATTRIBUTES = (
+    "id",
+    "site_id",
+    "title",
+    "category_id",
+    "currency_id",
+    "status",
+    "available_quantity",
+    "permalink",
+    "thumbnail",
+    "pictures",
+    "seller_id",
+    "official_store_id",
+    "condition",
+)
 
 
 class MeliApiError(RuntimeError):
@@ -221,34 +236,27 @@ class MeliClient:
             return {}
         if len(ids) > 20:
             raise ValueError("get_items_bulk acepta como máximo 20 IDs por lote")
-        attributes = ",".join(
-            (
-                "id",
-                "status_code",
-                "body.id",
-                "body.site_id",
-                "body.title",
-                "body.category_id",
-                "body.currency_id",
-                "body.status",
-                "body.available_quantity",
-                "body.permalink",
-                "body.thumbnail",
-                "body.pictures",
-                "body.seller_id",
-                "body.official_store_id",
-                "body.condition",
-            )
-        )
+        attributes = ",".join(("id", "status_code", *(f"body.{name}" for name in ITEM_ATTRIBUTES)))
         query = urlencode({"ids": ",".join(ids), "attributes": attributes})
-        payload = self._request_json(
-            "GET",
-            f"{API_BASE_URL}/items/bulk?{query}",
-            access_token=access_token,
-        )
+        try:
+            payload = self._request_json(
+                "GET",
+                f"{API_BASE_URL}/items/bulk?{query}",
+                access_token=access_token,
+            )
+        except MeliApiError as exc:
+            if exc.status_code != 403:
+                raise
+            # Algunas políticas de Mercado Libre rechazan el recurso bulk aunque
+            # el mismo token pueda consultar los artículos de forma individual.
+            return {
+                item_id: self.get_item(item_id, access_token=access_token)
+                for item_id in ids
+            }
         if not isinstance(payload, list):
             raise MeliApiError("La respuesta de /items/bulk no es una lista")
         results: dict[str, dict[str, Any]] = {}
+        fallback_ids: list[str] = []
         requested_ids = set(ids)
         for index, entry in enumerate(payload):
             if not isinstance(entry, dict):
@@ -277,6 +285,11 @@ class MeliClient:
                 error_item_id = ids[index]
             else:
                 error_item_id = item_id
+            if status_code == 403:
+                if not isinstance(error_item_id, str) or error_item_id not in requested_ids:
+                    raise MeliApiError("/items/bulk devolvió un rechazo para un id no solicitado")
+                fallback_ids.append(error_item_id)
+                continue
             if status_code != 200 or not isinstance(body, dict):
                 label = error_item_id if isinstance(error_item_id, str) else "desconocido"
                 raise MeliApiError(
@@ -290,10 +303,28 @@ class MeliClient:
             if isinstance(root_id, str) and isinstance(body_id, str) and root_id != body_id:
                 raise MeliApiError(f"/items/bulk devolvió IDs inconsistentes para {item_id}")
             results[item_id] = body
+        for item_id in fallback_ids:
+            results[item_id] = self.get_item(item_id, access_token=access_token)
         missing = set(ids) - set(results)
         if missing:
             raise MeliApiError(f"/items/bulk omitió {len(missing)} artículo(s) solicitado(s)")
         return results
+
+    def get_item(self, item_id: str, *, access_token: str) -> dict[str, Any]:
+        """Consulta un artículo individual y confirma que no haya sustitución de ID."""
+
+        query = urlencode({"attributes": ",".join(ITEM_ATTRIBUTES)})
+        payload = self._request_json(
+            "GET",
+            f"{API_BASE_URL}/items/{quote(item_id, safe='')}?{query}",
+            access_token=access_token,
+        )
+        if not isinstance(payload, dict):
+            raise MeliApiError(f"Respuesta individual inválida para {item_id}")
+        returned_id = payload.get("id")
+        if returned_id != item_id:
+            raise MeliApiError(f"La consulta individual devolvió un id distinto para {item_id}")
+        return payload
 
     def get_sale_price(self, item_id: str, *, access_token: str) -> dict[str, Any]:
         payload = self._request_json(

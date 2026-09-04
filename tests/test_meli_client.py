@@ -93,24 +93,55 @@ class MeliClientTests(unittest.TestCase):
         result = client.get_items_bulk(["MLM123456789"], access_token="temporary")
         self.assertEqual(result["MLM123456789"]["title"], "Báscula")
 
-    def test_bulk_reports_status_for_error_entry_without_exposing_body(self) -> None:
+    def test_bulk_falls_back_to_individual_request_for_403_entry(self) -> None:
         client = MeliClient(min_request_interval=0)
         client._request_json = Mock(  # type: ignore[method-assign]
-            return_value=[
+            side_effect=[
+                [
+                    {
+                        "status_code": 403,
+                        "body": {"message": "private diagnostic", "access_token": "never-log-this"},
+                    }
+                ],
                 {
-                    "status_code": 403,
-                    "body": {"message": "private diagnostic", "access_token": "never-log-this"},
-                }
+                    "id": "MLM123456789",
+                    "title": "Báscula",
+                },
             ]
         )
-        with self.assertRaises(MeliApiError) as captured:
+        result = client.get_items_bulk(["MLM123456789"], access_token="temporary")
+        self.assertEqual(result["MLM123456789"]["title"], "Báscula")
+        individual_url = client._request_json.call_args_list[1].args[1]  # type: ignore[union-attr]
+        self.assertIn("/items/MLM123456789?", individual_url)
+        self.assertNotIn("body.id", parse_qs(urlparse(individual_url).query)["attributes"][0])
+
+    def test_bulk_falls_back_when_the_whole_endpoint_returns_403(self) -> None:
+        client = MeliClient(min_request_interval=0)
+        client._request_json = Mock(  # type: ignore[method-assign]
+            side_effect=[
+                MeliApiError("rechazado", status_code=403),
+                {"id": "MLM123456789", "title": "Báscula"},
+            ]
+        )
+        result = client.get_items_bulk(["MLM123456789"], access_token="temporary")
+        self.assertEqual(result["MLM123456789"]["title"], "Báscula")
+
+    def test_bulk_does_not_fall_back_for_non_403_transport_error(self) -> None:
+        client = MeliClient(min_request_interval=0)
+        client._request_json = Mock(  # type: ignore[method-assign]
+            side_effect=MeliApiError("no encontrado", status_code=404)
+        )
+        with self.assertRaisesRegex(MeliApiError, "no encontrado"):
             client.get_items_bulk(["MLM123456789"], access_token="temporary")
-        self.assertEqual(captured.exception.status_code, 403)
-        message = str(captured.exception)
-        self.assertIn("MLM123456789", message)
-        self.assertIn("status_code=403", message)
-        self.assertNotIn("private diagnostic", message)
-        self.assertNotIn("never-log-this", message)
+        self.assertEqual(client._request_json.call_count, 1)
+
+    def test_individual_request_rejects_a_substituted_id(self) -> None:
+        client = MeliClient(min_request_interval=0)
+        client._request_json = Mock(  # type: ignore[method-assign]
+            return_value={"id": "MLM999999999", "title": "Otro"}
+        )
+        with self.assertRaisesRegex(MeliApiError, "id distinto"):
+            client.get_item("MLM123456789", access_token="temporary")
 
     def test_sale_price_uses_current_price_resource(self) -> None:
         client = MeliClient(min_request_interval=0)
