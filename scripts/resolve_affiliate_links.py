@@ -444,12 +444,17 @@ def resolve_config(
             if not isinstance(affiliate_url, str):
                 raise ValueError(f"products[{index}].affiliate_url es obligatorio")
             if affiliate_url not in cache:
-                cache[affiliate_url] = resolve_affiliate_product(
-                    affiliate_url,
-                    timeout=timeout,
-                    max_redirects=max_redirects,
-                    fetcher=fetcher,
-                )
+                try:
+                    cache[affiliate_url] = resolve_affiliate_product(
+                        affiliate_url,
+                        timeout=timeout,
+                        max_redirects=max_redirects,
+                        fetcher=fetcher,
+                    )
+                except LinkResolutionError as exc:
+                    raise LinkResolutionError(
+                        f"products[{index}] ({affiliate_url}): {exc}"
+                    ) from exc
             item_id, snapshot = cache[affiliate_url]
             copied["id"] = item_id
             if snapshot is not None:

@@ -133,6 +133,24 @@ class ResolveAffiliateLinksTests(unittest.TestCase):
             with self.assertRaisesRegex(ValueError, "duplicado"):
                 _write_validated_config(Path(directory, "resolved.json"), resolved)
 
+    def test_resolution_error_identifies_the_config_entry_and_url(self) -> None:
+        entries = [
+            {
+                "affiliate_url": "https://meli.la/falla",
+                "category": "fitness",
+                "enabled": True,
+            }
+        ]
+
+        def fetch(url: str, timeout: float):
+            return 200, {"Content-Type": "text/html; charset=utf-8"}, url, "<html></html>"
+
+        with self.assertRaisesRegex(
+            LinkResolutionError,
+            r"products\[0\] \(https://meli\.la/falla\): .*no contiene un ID",
+        ):
+            resolve_config(entries, fetcher=fetch)
+
     def test_extracts_featured_product_from_official_social_landing(self) -> None:
         html = """
         <html><body>
