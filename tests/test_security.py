@@ -47,6 +47,15 @@ class SecurityTests(unittest.TestCase):
         for forbidden in ("access_token", "refresh_token", "client_secret", "authorization"):
             self.assertNotIn(forbidden, config)
 
+    def test_active_products_do_not_bypass_the_public_snapshot(self) -> None:
+        products = json.loads((ROOT / "config/products.json").read_text(encoding="utf-8"))
+        for index, product in enumerate(products):
+            if product.get("enabled") is True:
+                self.assertFalse(
+                    "id" in product and "snapshot" not in product,
+                    f"products[{index}] fuerza OAuth sin una ficha pública de respaldo",
+                )
+
 
 if __name__ == "__main__":
     unittest.main()
