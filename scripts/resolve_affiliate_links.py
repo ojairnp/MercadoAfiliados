@@ -436,6 +436,11 @@ def resolve_config(
     for index, entry in enumerate(entries):
         copied = dict(entry)
         existing_id = copied.get("id")
+        if copied.get("enabled") is False and existing_id is None:
+            # Los enlaces deshabilitados se conservan en la configuracion fuente,
+            # pero no forman parte del archivo temporal que consume el sincronizador.
+            # Asi, una publicacion pausada o retirada no bloquea todo el catalogo.
+            continue
         if existing_id is not None:
             if not isinstance(existing_id, str) or not ITEM_ID_PATTERN.fullmatch(existing_id):
                 raise ValueError(f"products[{index}].id debe tener el formato MLM seguido de 6 a 20 dígitos")

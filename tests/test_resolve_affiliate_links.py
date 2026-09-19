@@ -42,6 +42,20 @@ class ResolveAffiliateLinksTests(unittest.TestCase):
         ]
         self.assertEqual(resolve_config(entries, fetcher=unexpected_fetch), entries)
 
+    def test_disabled_entry_without_id_is_skipped_without_network_request(self) -> None:
+        def unexpected_fetch(url: str, timeout: float):
+            raise AssertionError("No debe consultar la red para un producto deshabilitado")
+
+        entries = [
+            {
+                "affiliate_url": "https://meli.la/retirado",
+                "category": "fitness",
+                "enabled": False,
+            }
+        ]
+
+        self.assertEqual(resolve_config(entries, fetcher=unexpected_fetch), [])
+
     def test_follows_only_explicit_official_redirects(self) -> None:
         responses = {
             "https://meli.la/abc": (

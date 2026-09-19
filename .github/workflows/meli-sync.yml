@@ -2,6 +2,14 @@ name: Sincronizar productos de Mercado Libre
 
 on:
   workflow_dispatch:
+  push:
+    branches:
+      - main
+    paths:
+      - ".github/workflows/meli-sync.yml"
+      - "config/products.json"
+      - "scripts/**"
+      - "tests/**"
   schedule:
     - cron: "17 */12 * * *"
 
@@ -25,10 +33,10 @@ jobs:
 
     steps:
       - name: Descargar repositorio
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Configurar Python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v6
         with:
           python-version: "3.12"
 
