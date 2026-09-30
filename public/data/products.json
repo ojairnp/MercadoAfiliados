@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "generated_at": "2026-09-29T18:06:34Z",
+  "generated_at": "2026-09-30T05:36:44Z",
   "products": [
     {
       "id": "MLM3041581530",
@@ -85,7 +85,7 @@
     {
       "id": "MLM63277853",
       "title": "Pelota Fitness De Ejercicio Para Yoga Pilates Con Bomba 65cm Azul",
-      "price": 199,
+      "price": 193.03,
       "currency": "MXN",
       "image": "https://http2.mlstatic.com/D_Q_NP_2X_885954-MLA101282176644_122025-V.webp",
       "permalink": "https://www.mercadolibre.com.mx/pelota-fitness-de-ejercicio-para-yoga-pilates-con-bomba-65cm-azul/p/MLM63277853",
@@ -96,7 +96,7 @@
       "condition": null,
       "seller_id": null,
       "official_store_id": null,
-      "updated_at": "2026-09-29T05:47:31Z"
+      "updated_at": "2026-09-30T05:36:44Z"
     },
     {
       "id": "MLM60723173",
