@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "generated_at": "2026-10-09T18:23:05Z",
+  "generated_at": "2026-10-17T14:08:01Z",
   "products": [
     {
       "id": "MLM3041581530",
@@ -21,7 +21,7 @@
     {
       "id": "MLM1489110777",
       "title": "Tapete Yoga Portatil Ejercicio Pilates Correa Transportadora",
-      "price": 260.93,
+      "price": 269,
       "currency": "MXN",
       "image": "https://http2.mlstatic.com/D_Q_NP_2X_792983-MLM91882081920_092025-V.webp",
       "permalink": "https://articulo.mercadolibre.com.mx/MLM-1489110777-tapete-yoga-portatil-ejercicio-pilates-correa-transportadora-_JM",
@@ -32,14 +32,14 @@
       "condition": null,
       "seller_id": null,
       "official_store_id": null,
-      "updated_at": "2026-10-03T05:22:08Z"
+      "updated_at": "2026-10-17T14:08:01Z"
     },
     {
       "id": "MLM1495903462",
       "title": "Set De Mancuernas Ajustables Pesas Altera Barra Recta 15 Kg",
       "price": 749,
       "currency": "MXN",
-      "image": "https://http2.mlstatic.com/D_Q_NP_2X_810431-MLM89346251451_082025-V-set-de-mancuernas-ajustables-pesas-altera-barra-recta-15-kg.webp",
+      "image": "https://http2.mlstatic.com/D_Q_NP_2X_960604-MLM117445372300_102026-V-set-de-mancuernas-ajustables-pesas-altera-barra-recta-15-kg.webp",
       "permalink": "https://articulo.mercadolibre.com.mx/MLM-1495903462-set-de-mancuernas-ajustables-pesas-altera-barra-recta-15-kg-_JM",
       "affiliate_url": "https://meli.la/1gZ52Ws",
       "category": "fitness",
@@ -48,12 +48,12 @@
       "condition": null,
       "seller_id": null,
       "official_store_id": null,
-      "updated_at": "2026-09-19T22:01:11Z"
+      "updated_at": "2026-10-17T14:08:01Z"
     },
     {
       "id": "MLM3046350181",
       "title": "Cuerdas Para Saltar Y Para Brincar 4pzs Ejercicio Gimnasio",
-      "price": 87.87,
+      "price": 89.86,
       "currency": "MXN",
       "image": "https://http2.mlstatic.com/D_Q_NP_2X_667807-CBT114461708567_072026-V.webp",
       "permalink": "https://articulo.mercadolibre.com.mx/MLM-3046350181-cuerdas-para-saltar-y-para-brincar-4pzs-ejercicio-gimnasio-_JM",
@@ -64,7 +64,7 @@
       "condition": null,
       "seller_id": null,
       "official_store_id": null,
-      "updated_at": "2026-10-08T18:52:33Z"
+      "updated_at": "2026-10-17T14:08:01Z"
     },
     {
       "id": "MLM2869967750",
@@ -83,25 +83,9 @@
       "updated_at": "2026-09-04T16:57:24Z"
     },
     {
-      "id": "MLM63277853",
-      "title": "Pelota Fitness De Ejercicio Para Yoga Pilates Con Bomba 65cm Azul",
-      "price": 193.03,
-      "currency": "MXN",
-      "image": "https://http2.mlstatic.com/D_Q_NP_2X_885954-MLA101282176644_122025-V.webp",
-      "permalink": "https://www.mercadolibre.com.mx/pelota-fitness-de-ejercicio-para-yoga-pilates-con-bomba-65cm-azul/p/MLM63277853",
-      "affiliate_url": "https://meli.la/19VmaMz",
-      "category": "fitness",
-      "available": true,
-      "status": "active",
-      "condition": null,
-      "seller_id": null,
-      "official_store_id": null,
-      "updated_at": "2026-09-30T05:36:44Z"
-    },
-    {
       "id": "MLM60723173",
       "title": "Sistema de Suspensión para Entrenamiento de Resistencia con Correas Ajustables de Lona y Anclaje",
-      "price": 397.4,
+      "price": 377.75,
       "currency": "MXN",
       "image": "https://http2.mlstatic.com/D_Q_NP_2X_755040-MLA99443802884_112025-V.webp",
       "permalink": "https://www.mercadolibre.com.mx/sistema-de-suspension-para-entrenamiento-de-resistencia-con-correas-ajustables-de-lona-y-anclaje/p/MLM60723173",
@@ -112,7 +96,7 @@
       "condition": null,
       "seller_id": null,
       "official_store_id": null,
-      "updated_at": "2026-10-08T18:52:33Z"
+      "updated_at": "2026-10-17T14:08:01Z"
     },
     {
       "id": "MLM2491590981",
@@ -133,7 +117,7 @@
     {
       "id": "MLM51400202",
       "title": "Ejercitador De Dedo Fortalecedor Mano Agarre Antebrazo 11 Pz Elastica Entrenamiento Antebrazo 5-60kg Hand Grip Ejercicio Dedos Ajustable Kit Negro Correa Mano De Algodón Protección Deportiva Vendaje",
-      "price": 350,
+      "price": 396,
       "currency": "MXN",
       "image": "https://http2.mlstatic.com/D_Q_NP_2X_667844-MLA117503405807_092026-V.webp",
       "permalink": "https://www.mercadolibre.com.mx/ejercitador-de-dedo-fortalecedor-mano-agarre-antebrazo-11-pz-elastica-entrenamiento-antebrazo-5-60kg-hand-grip-ejercicio-dedos-ajustable-kit-negro-correa-mano-de-algodon-proteccion-deportiva-vendaje/p/MLM51400202",
@@ -144,7 +128,7 @@
       "condition": null,
       "seller_id": null,
       "official_store_id": null,
-      "updated_at": "2026-10-01T06:00:21Z"
+      "updated_at": "2026-10-17T14:08:01Z"
     },
     {
       "id": "MLM43403219",
@@ -181,7 +165,7 @@
     {
       "id": "MLM2570415307",
       "title": "Kit Rodillo Abdominal Barras Push-up Cuerda Ejercitador Mano",
-      "price": 268.1,
+      "price": 278.1,
       "currency": "MXN",
       "image": "https://http2.mlstatic.com/D_Q_NP_2X_709810-MLM98695284305_112025-V.webp",
       "permalink": "https://articulo.mercadolibre.com.mx/MLM-2570415307-kit-rodillo-abdominal-barras-push-up-cuerda-ejercitador-mano-_JM",
@@ -192,7 +176,7 @@
       "condition": null,
       "seller_id": null,
       "official_store_id": null,
-      "updated_at": "2026-10-08T06:09:39Z"
+      "updated_at": "2026-10-17T14:08:01Z"
     },
     {
       "id": "MLM1744695492",
