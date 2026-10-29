@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "generated_at": "2026-10-29T05:52:20Z",
+  "generated_at": "2026-10-29T18:29:47Z",
   "products": [
     {
       "id": "MLM3041581530",
@@ -85,7 +85,7 @@
     {
       "id": "MLM60723173",
       "title": "Sistema de Suspensión para Entrenamiento de Resistencia con Correas Ajustables de Lona y Anclaje",
-      "price": 388.14,
+      "price": 376.51,
       "currency": "MXN",
       "image": "https://http2.mlstatic.com/D_Q_NP_2X_755040-MLA99443802884_112025-V.webp",
       "permalink": "https://www.mercadolibre.com.mx/sistema-de-suspension-para-entrenamiento-de-resistencia-con-correas-ajustables-de-lona-y-anclaje/p/MLM60723173",
@@ -96,7 +96,7 @@
       "condition": null,
       "seller_id": null,
       "official_store_id": null,
-      "updated_at": "2026-10-28T18:21:49Z"
+      "updated_at": "2026-10-29T18:29:47Z"
     },
     {
       "id": "MLM2491590981",
@@ -117,7 +117,7 @@
     {
       "id": "MLM51400202",
       "title": "Ejercitador De Dedo Fortalecedor Mano Agarre Antebrazo 11 Pz Elastica Entrenamiento Antebrazo 5-60kg Hand Grip Ejercicio Dedos Ajustable Kit Negro Correa Mano De Algodón Protección Deportiva Vendaje",
-      "price": 396,
+      "price": 352,
       "currency": "MXN",
       "image": "https://http2.mlstatic.com/D_Q_NP_2X_667844-MLA117503405807_092026-V.webp",
       "permalink": "https://www.mercadolibre.com.mx/ejercitador-de-dedo-fortalecedor-mano-agarre-antebrazo-11-pz-elastica-entrenamiento-antebrazo-5-60kg-hand-grip-ejercicio-dedos-ajustable-kit-negro-correa-mano-de-algodon-proteccion-deportiva-vendaje/p/MLM51400202",
@@ -128,7 +128,7 @@
       "condition": null,
       "seller_id": null,
       "official_store_id": null,
-      "updated_at": "2026-10-29T05:52:20Z"
+      "updated_at": "2026-10-29T18:29:47Z"
     },
     {
       "id": "MLM43403219",
@@ -197,7 +197,7 @@
     {
       "id": "MLM63135636",
       "title": "Caminadora Eléctrica 6 Km Walking Pad 2 Niveles Control Remo Negro",
-      "price": 1899,
+      "price": 1799,
       "currency": "MXN",
       "image": "https://http2.mlstatic.com/D_Q_NP_2X_899213-MLA108649024755_032026-V.webp",
       "permalink": "https://www.mercadolibre.com.mx/caminadora-electrica-6-km-walking-pad-2-niveles-control-remo-negro/p/MLM63135636",
@@ -208,7 +208,7 @@
       "condition": null,
       "seller_id": null,
       "official_store_id": null,
-      "updated_at": "2026-10-28T18:21:49Z"
+      "updated_at": "2026-10-29T18:29:47Z"
     }
   ]
 }
