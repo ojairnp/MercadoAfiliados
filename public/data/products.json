@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "generated_at": "2026-11-12T07:15:47Z",
+  "generated_at": "2026-11-12T19:57:53Z",
   "products": [
     {
       "id": "MLM3041581530",
@@ -149,7 +149,7 @@
     {
       "id": "MLM52220917",
       "title": "Balón Medicinal De Entrenamiento Crossfit Reforzado 4 Kg Negro",
-      "price": 489,
+      "price": 239,
       "currency": "MXN",
       "image": "https://http2.mlstatic.com/D_Q_NP_2X_996048-MLA111032730780_052026-V.webp",
       "permalink": "https://www.mercadolibre.com.mx/balon-medicinal-de-entrenamiento-crossfit-reforzado-4-kg-negro/p/MLM52220917",
@@ -160,7 +160,7 @@
       "condition": null,
       "seller_id": null,
       "official_store_id": null,
-      "updated_at": "2026-11-12T07:15:47Z"
+      "updated_at": "2026-11-12T19:57:53Z"
     },
     {
       "id": "MLM2570415307",
@@ -197,7 +197,7 @@
     {
       "id": "MLM63135636",
       "title": "Caminadora Eléctrica 6 Km Walking Pad 2 Niveles Control Remo Negro",
-      "price": 1899,
+      "price": 1799,
       "currency": "MXN",
       "image": "https://http2.mlstatic.com/D_Q_NP_2X_899213-MLA108649024755_032026-V.webp",
       "permalink": "https://www.mercadolibre.com.mx/caminadora-electrica-6-km-walking-pad-2-niveles-control-remo-negro/p/MLM63135636",
@@ -208,7 +208,7 @@
       "condition": null,
       "seller_id": null,
       "official_store_id": null,
-      "updated_at": "2026-11-12T07:15:47Z"
+      "updated_at": "2026-11-12T19:57:53Z"
     }
   ]
 }
