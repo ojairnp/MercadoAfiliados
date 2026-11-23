@@ -1,11 +1,11 @@
 {
   "schema_version": 1,
-  "generated_at": "2026-11-22T19:44:29Z",
+  "generated_at": "2026-11-23T07:44:32Z",
   "products": [
     {
       "id": "MLM3041581530",
       "title": "Kit De Bandas Elásticas De Resistencia 150lb Ligas Ejercicio",
-      "price": 267.89,
+      "price": 267.61,
       "currency": "MXN",
       "image": "https://http2.mlstatic.com/D_Q_NP_2X_860646-CBT76543881547_052024-V.webp",
       "permalink": "https://articulo.mercadolibre.com.mx/MLM-3041581530-kit-de-bandas-elasticas-de-resistencia-150lb-ligas-ejercicio-_JM",
@@ -16,7 +16,7 @@
       "condition": null,
       "seller_id": null,
       "official_store_id": null,
-      "updated_at": "2026-11-21T07:14:53Z"
+      "updated_at": "2026-11-23T07:44:32Z"
     },
     {
       "id": "MLM1489110777",
@@ -53,7 +53,7 @@
     {
       "id": "MLM3046350181",
       "title": "Cuerdas Para Saltar Y Para Brincar 4pzs Ejercicio Gimnasio",
-      "price": 88.08,
+      "price": 87.99,
       "currency": "MXN",
       "image": "https://http2.mlstatic.com/D_Q_NP_2X_820889-CBT118272628794_102026-V.webp",
       "permalink": "https://articulo.mercadolibre.com.mx/MLM-3046350181-cuerdas-para-saltar-y-para-brincar-4pzs-ejercicio-gimnasio-_JM",
@@ -64,7 +64,7 @@
       "condition": null,
       "seller_id": null,
       "official_store_id": null,
-      "updated_at": "2026-11-21T07:14:53Z"
+      "updated_at": "2026-11-23T07:44:32Z"
     },
     {
       "id": "MLM2869967750",
@@ -85,7 +85,7 @@
     {
       "id": "MLM60723173",
       "title": "Sistema de Suspensión para Entrenamiento de Resistencia con Correas Ajustables de Lona y Anclaje",
-      "price": 398.81,
+      "price": 398.38,
       "currency": "MXN",
       "image": "https://http2.mlstatic.com/D_Q_NP_2X_755040-MLA99443802884_112025-V.webp",
       "permalink": "https://www.mercadolibre.com.mx/sistema-de-suspension-para-entrenamiento-de-resistencia-con-correas-ajustables-de-lona-y-anclaje/p/MLM60723173",
@@ -96,7 +96,7 @@
       "condition": null,
       "seller_id": null,
       "official_store_id": null,
-      "updated_at": "2026-11-20T07:21:49Z"
+      "updated_at": "2026-11-23T07:44:32Z"
     },
     {
       "id": "MLM2491590981",
@@ -197,7 +197,7 @@
     {
       "id": "MLM63135636",
       "title": "Caminadora Eléctrica Walking Pad 2 Niveles Control Remoto Negro",
-      "price": 1799,
+      "price": 1897,
       "currency": "MXN",
       "image": "https://http2.mlstatic.com/D_Q_NP_2X_964301-MLA120041035136_112026-V.webp",
       "permalink": "https://www.mercadolibre.com.mx/caminadora-electrica-walking-pad-2-niveles-control-remoto-negro/p/MLM63135636",
@@ -208,7 +208,7 @@
       "condition": null,
       "seller_id": null,
       "official_store_id": null,
-      "updated_at": "2026-11-22T19:44:29Z"
+      "updated_at": "2026-11-23T07:44:32Z"
     }
   ]
 }
